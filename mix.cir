@@ -1,0 +1,115 @@
+TIMER 555
+ * https://www.electro-tech-online.com/threads/spice-and-555-timer.5806/
+ .SUBCKT UA555  32 30 19 23 33 1  21
+    *           TR O  R  F  TH D  V
+    *
+    * Taken from the Fairchild data book (1982) page 9-3
+    *SYM=UA555
+    *DWG=C:\SPICE\555\UA555.DWG
+    Q4 25 2 3 QP
+    Q5 0 6 3 QP
+    Q6 6 6 8 QP
+    R1 9 21 4.7K
+    R2 3 21 830
+    R3 8 21 4.7K
+    Q7 2 33 5 QN
+    Q8 2 5 17 QN
+    Q9 6 4 17 QN
+    Q10 6 23 4 QN
+    Q11 12 20 10 QP
+    R4 10 21 1K
+    Q12 22 11 12 QP
+    Q13 14 13 12 QP
+    Q14 0 32 11 QP
+    Q15 14 18 13 QP
+    R5 14 0 100K
+    R6 22 0 100K
+    R7 17 0 10K
+    Q16 1 15 0 QN
+    Q17 15 19 31 QP
+    R8 18 23 5K
+    R9 18 0 5K
+    R10 21 23 5K
+    Q18 27 20 21 QP
+    Q19 20 20 21 QP
+    R11 20 31 5K
+    D1 31 24 DA
+    Q20 24 25 0 QN
+    Q21 25 22 0 QN
+    Q22 27 24 0 QN
+    R12 25 27 4.7K
+    R13 21 29 6.8K
+    Q23 21 29 28 QN
+    Q24 29 27 16 QN
+    Q25 30 26 0 QN
+    Q26 21 28 30 QN
+    D2 30 29 DA
+    R14 16 15 100
+    R15 16 26 220
+    R16 16 0 4.7K
+    R17 28 30 3.9K
+    Q3 2 2 9 QP
+    .MODEL DA D (RS=40 IS=1.0E-14 CJO=1PF)
+    .MODEL QP PNP (BF=20 BR=0.02 RC=4 RB=25 IS=1.0E-14 VA=50 NE=2)
+    + CJE=12.4P VJE=1.1 MJE=.5 CJC=4.02P VJC=.3 MJC=.3 TF=229P TR=159N)
+    .MODEL QN NPN (IS=5.07F NF=1 BF=100 VAF=161 IKF=30M ISE=3.9P NE=2
+    + BR=4 NR=1 VAR=16 IKR=45M RE=1.03 RB=4.12 RC=.412 XTB=1.5
+    + CJE=12.4P VJE=1.1 MJE=.5 CJC=4.02P VJC=.3 MJC=.3 TF=229P TR=959P)
+ .ENDS
+
+    **********
+    * Sample Test Circuit for the LM555 Timer: Astable Mode
+    * The LM555 timer model is designed for low frequency
+    * applications, up to 100Hz.
+    .INCLUDE TLC555.LIB
+    .TRAN 10u 100MS
+    .OPTIONS RELTOL=.0001
+    
+*Waterlevel
+.MODEL 1N4148 d (
+
++ IS=6.89131e-09 RS=0.636257 N=1.82683 EG=1.15805
+
++ XTI=0.518861 BV=80 IBV=0.0001 CJO=9.99628e-13
+
++ VJ=0.942987 M=0.727538 FC=0.5 TT=4.33674e-09
+
++ KF=0 AF=1 TNOM=27)
+
+.MODEL QBC547BP npn(IS=1.8E-14 BF=400 NF=0.9955 VAF=80 IKF=0.14
++ISE=5E-14 NE=1.46 BR=35.5 NR=1.005 VAR=12.5 IKR=0.03 ISC=1.72E-13
++NC=1.27 RB=0.56 RE=0.6 RC=0.25 CJE=1.3E-11 TF=6.4E-10 CJC=4E-12
++VJC=0.54 TR=5.072E-8 )
+
+
+Va a 0 pulse(12 0 0 0 0 40s 150s)
+vb b 0 pulse(12 0 0 0 0 80s 100s)
+
+V1 N0 0 dc=12v
+
+R4 a tri 1.02k
+R5 b thr 1.02k
+R2 tri 0 100k
+R1 thr 0 100k
+C1 con 0 100n
+X1 tri out N0 con thr 0 N0 UA555
+R3  out  p7 10k
+R6 p7 0 100k
+D1 p8 N0 1N4148
+Q1 p8 p7 0 QBC547BP
+Rl p8 N0 100k
+
+
+.control
+tran 0.1s 500s
+display
+set color0=black
+set color1=white
+set color2=red
+set color3=green
+set color4=blue
+set xbrushwidth=2
+plot v(p8)+30 v(a) v(b)+15
+
+.endc
+.end
